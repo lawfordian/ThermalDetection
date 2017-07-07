@@ -3,12 +3,15 @@
 #include "Palettes.h"
 #include "SPI.h"
 #include "Lepton_I2C.h"
+#include "HitDetector.h"
 
 #define PACKET_SIZE 164
 #define PACKET_SIZE_UINT16 (PACKET_SIZE/2)
 #define PACKETS_PER_FRAME 60
 #define FRAME_SIZE_UINT16 (PACKET_SIZE_UINT16*PACKETS_PER_FRAME)
 #define FPS 27;
+
+#define IMAGE_FORMAT QImage::Format_RGB888
 
 LeptonThread::LeptonThread() : QThread()
 {
@@ -20,7 +23,10 @@ LeptonThread::~LeptonThread() {
 void LeptonThread::run()
 {
 	//create the initial image
-	myImage = QImage(80, 60, QImage::Format_RGB888);
+	myImage = QImage(80, 60, IMAGE_FORMAT);
+	
+	//create instance of the detector
+	HitDetector *myHitDetector = new HitDetector();
 
 	//open spi port
 	SpiOpenPort(0);
@@ -87,7 +93,7 @@ void LeptonThread::run()
 				continue;
 			}
 			value = (frameBuffer[i] - minValue) * scale;
-			const int *colormap = colormap_ironblack;
+			const int *colormap = colormap_greyscale;
 			color = qRgb(colormap[3*value], colormap[3*value+1], colormap[3*value+2]);
 			column = (i % PACKET_SIZE_UINT16 ) - 2;
 			row = i / PACKET_SIZE_UINT16;
@@ -96,6 +102,12 @@ void LeptonThread::run()
 
 		//lets emit the signal for update
 		emit updateImage(myImage);
+		
+		//convert image from QImage to Mat
+		cv::Mat imageMat = cv::Mat mat(myImage.rows(),myImage.cols(),CV_8UC3,myImage.scanline());
+		
+		//send image to hitDetector
+		myHitDetector->detectHit(imageMat);
 
 	}
 	
