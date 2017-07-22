@@ -9,11 +9,15 @@
 #include <QString>
 #include <QPushButton>
 
+#include <cstdio>
+
 #include "LeptonThread.h"
 #include "MyLabel.h"
 
 int main( int argc, char **argv )
 {
+	printf("Opened application\n");
+	
 	//create the app
 	QApplication a( argc, argv );
 	

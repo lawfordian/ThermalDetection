@@ -9,6 +9,8 @@
 #include <QPixmap>
 #include <QImage>
 
+#include <opencv2/opencv.hpp>
+
 #define PACKET_SIZE 164
 #define PACKET_SIZE_UINT16 (PACKET_SIZE/2)
 #define PACKETS_PER_FRAME 60
@@ -23,6 +25,7 @@ public:
   ~LeptonThread();
 
   void run();
+  cv::Mat QImage2Mat(QImage const&);
 
 public slots:
   void performFFC();

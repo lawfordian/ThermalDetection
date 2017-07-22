@@ -1,27 +1,18 @@
-#ifndef HITDETECTOR_H
-#define HITDETECTOR_H
+#include "opencv2/opencv.hpp"
 
-#include <stdint.h>
+using namespace cv;
 
-class HitDetector
-{
+class HitDetector {
+	public:
+		void detectHit(Mat img);
+		HitDetector();
+		~HitDetector();
 
-public:
-	
-	HitDetector();
-	~hitDetector();
-	
-	void detectHit(Mat img);
+	private:
+		Mat backgroundSubtract(Mat inputImg);
+		void blobDetect(Mat image);
+		Ptr<BackgroundSubtractor> pMOG;
+		Ptr<BackgroundSubtractor> pMOG2;
+		Ptr<SimpleBlobDetector> blobDetector;
 
-private:
-
-	Ptr<BackgroundSubtractor> pMOG; 
-	Ptr<BackgroundSubtractor> pMOG2; 
-	Ptr<SimpleBlobDetector> blobDetector;
-	
-	Mat backgroundSubtract(Mat inputImg);
-	void blobDetect(Mat image);
-	
 };
-
-#endif

@@ -3,7 +3,9 @@
 #include "Palettes.h"
 #include "SPI.h"
 #include "Lepton_I2C.h"
-#include "HitDetector.h"
+#include "HitDetector.cpp"
+
+#include "opencv2/opencv.hpp"
 
 #define PACKET_SIZE 164
 #define PACKET_SIZE_UINT16 (PACKET_SIZE/2)
@@ -13,11 +15,27 @@
 
 #define IMAGE_FORMAT QImage::Format_RGB888
 
+// scene min & max
+#define MIN_DISP 44000
+#define MAX_DISP 65535
+
 LeptonThread::LeptonThread() : QThread()
 {
 }
 
 LeptonThread::~LeptonThread() {
+}
+
+cv::Mat LeptonThread::QImage2Mat(QImage const& inImage) {
+     	QImage   swapped = inImage;
+        if ( inImage.format() == QImage::Format_RGB32 ) {
+            swapped = swapped.convertToFormat( QImage::Format_RGB888 );
+        }
+        swapped = swapped.rgbSwapped();
+        return cv::Mat( swapped.height(), swapped.width(),
+        	CV_8UC3,
+                const_cast<uchar*>(swapped.bits()),
+                static_cast<size_t>(swapped.bytesPerLine())).clone();
 }
 
 void LeptonThread::run()
@@ -59,8 +77,8 @@ void LeptonThread::run()
 		frameBuffer = (uint16_t *)result;
 		int row, column;
 		uint16_t value;
-		uint16_t minValue = 65535;
-		uint16_t maxValue = 0;
+		uint16_t minValue = MIN_DISP;
+		uint16_t maxValue = MAX_DISP;
 
 		
 		for(int i=0;i<FRAME_SIZE_UINT16;i++) {
@@ -75,12 +93,12 @@ void LeptonThread::run()
 			result[i*2+1] = temp;
 			
 			value = frameBuffer[i];
-			if(value > maxValue) {
+			/* if(value > maxValue) {
 				maxValue = value;
 			}
 			if(value < minValue) {
 				minValue = value;
-			}
+			} */
 			column = i % PACKET_SIZE_UINT16 - 2;
 			row = i / PACKET_SIZE_UINT16 ;
 		}
@@ -93,7 +111,7 @@ void LeptonThread::run()
 				continue;
 			}
 			value = (frameBuffer[i] - minValue) * scale;
-			const int *colormap = colormap_greyscale;
+			const int *colormap = colormap_grayscale;
 			color = qRgb(colormap[3*value], colormap[3*value+1], colormap[3*value+2]);
 			column = (i % PACKET_SIZE_UINT16 ) - 2;
 			row = i / PACKET_SIZE_UINT16;
@@ -104,7 +122,7 @@ void LeptonThread::run()
 		emit updateImage(myImage);
 		
 		//convert image from QImage to Mat
-		cv::Mat imageMat = cv::Mat mat(myImage.rows(),myImage.cols(),CV_8UC3,myImage.scanline());
+		cv::Mat imageMat = QImage2Mat(myImage);
 		
 		//send image to hitDetector
 		myHitDetector->detectHit(imageMat);
