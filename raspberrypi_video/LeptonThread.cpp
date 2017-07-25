@@ -16,8 +16,9 @@
 #define IMAGE_FORMAT QImage::Format_RGB888
 
 // scene min & max
-#define MIN_DISP 44000
-#define MAX_DISP 65535
+// 14bit number, we want a range roughly 10C -> 100C
+#define MIN_DISP 7800
+#define MAX_DISP 9000
 
 LeptonThread::LeptonThread() : QThread()
 {
