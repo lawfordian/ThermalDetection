@@ -18,7 +18,7 @@
 // scene min & max
 // 14bit number, we want a range roughly 10C -> 100C
 #define MIN_DISP 7800
-#define MAX_DISP 9000
+#define MAX_DISP 10000
 
 LeptonThread::LeptonThread() : QThread()
 {
