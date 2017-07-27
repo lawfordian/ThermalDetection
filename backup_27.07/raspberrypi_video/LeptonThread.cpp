@@ -49,12 +49,6 @@ void LeptonThread::run()
 
 	//open spi port
 	SpiOpenPort(0);
-	
-	std::cout << "agc state: ";
-	lepton_get_agc();
-	
-	std::cout << "aux temp: ";
-	lepton_aux_temp();
 
 	while(true) {
 
