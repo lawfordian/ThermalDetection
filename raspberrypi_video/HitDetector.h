@@ -12,7 +12,7 @@ class HitDetector {
 		Mat backgroundSubtract(Mat inputImg);
 		void blobDetect(Mat image);
 		Ptr<BackgroundSubtractor> pMOG;
-		Ptr<BackgroundSubtractor> pMOG2;
+		Ptr<BackgroundSubtractorMOG2> pMOG2;
 		Ptr<SimpleBlobDetector> blobDetector;
 
 };
