@@ -6,12 +6,19 @@
 #include "HitDetector.cpp"
 
 #include "opencv2/opencv.hpp"
+#include <highgui.hpp>
 
 #define PACKET_SIZE 164
 #define PACKET_SIZE_UINT16 (PACKET_SIZE/2)
 #define PACKETS_PER_FRAME 60
 #define FRAME_SIZE_UINT16 (PACKET_SIZE_UINT16*PACKETS_PER_FRAME)
-#define FPS 27;
+#define FPS 27
+#define HEIGHT 60
+#define WIDTH 80
+
+#define VID_OUT_FILE "ThermalVisionVideo"
+#define VID_FPS FPS
+#define VID_COL true
 
 #define IMAGE_FORMAT QImage::Format_RGB888
 
@@ -42,11 +49,21 @@ cv::Mat LeptonThread::QImage2Mat(QImage const& inImage) {
 void LeptonThread::run()
 {
 	//create the initial image
-	myImage = QImage(80, 60, IMAGE_FORMAT);
+	myImage = QImage(WIDTH, HEIGHT, IMAGE_FORMAT);
 	
 	//create instance of the detector
 	HitDetector *myHitDetector = new HitDetector();
-
+	
+	//create video writer
+	cv::Size S = cv::Size(WIDTH, HEIGHT);
+	VideoWriter outputVideo = VideoWriter::VideoWriter(VID_OUT_FILE, CV_FOURCC('H','2','6','4'), VID_FPS, S, VID_COL);
+	if(outputVideo.isOpened()) {
+		std::cout << "VideoWriter Opened.";
+	}
+	else {
+		std::cout << "VideoWriter Failed.";
+	}
+	
 	//open spi port
 	SpiOpenPort(0);
 	
@@ -133,7 +150,9 @@ void LeptonThread::run()
 		
 		//send image to hitDetector
 		myHitDetector->detectHit(imageMat);
-
+		
+		//deal with video encoding
+		outputVideo.write(imageMat);
 	}
 	
 	//finally, close SPI port just bcuz
