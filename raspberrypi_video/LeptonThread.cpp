@@ -16,7 +16,8 @@
 #define HEIGHT 60
 #define WIDTH 80
 
-#define VID_OUT_FILE "ThermalVisionVideo"
+#define API_PREF cv::CAP_V4L
+#define VID_OUT_FILE "ThermalVisionVideo.avi"
 #define VID_FPS FPS
 #define VID_COL true
 
@@ -56,7 +57,7 @@ void LeptonThread::run()
 	
 	//create video writer
 	cv::Size S = cv::Size(WIDTH, HEIGHT);
-	VideoWriter outputVideo = VideoWriter::VideoWriter(VID_OUT_FILE, CV_FOURCC('H','2','6','4'), VID_FPS, S, VID_COL);
+	cv::VideoWriter outputVideo = cv::VideoWriter::VideoWriter(VID_OUT_FILE, API_PREF, cv::VideoWriter::fourcc('H','2','6','4'), VID_FPS, S, VID_COL);
 	if(outputVideo.isOpened()) {
 		std::cout << "VideoWriter Opened.";
 	}
@@ -154,6 +155,8 @@ void LeptonThread::run()
 		//deal with video encoding
 		outputVideo.write(imageMat);
 	}
+	// destroy videowriter
+	outputVideo.release();
 	
 	//finally, close SPI port just bcuz
 	SpiClosePort(0);
